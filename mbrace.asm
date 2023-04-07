@@ -83,7 +83,6 @@ draw_player:
     mov si, [sy]
     mov dx, "#"
     call put_char
-   
     
     ret
 
@@ -128,7 +127,6 @@ _crow:
     jz _ccol
     
 _cout:
-    
     ;xor  di, di
     ;mov  cx, 80 * 25
     ;mov  ax, 0x720      ; WhiteOnBlack space character

@@ -110,23 +110,14 @@ put_char:
 
 clscr:
     xor di, di
-    mov ax, 24
-    jmp _crow
+    mov ax, 80 * 25 * 2
+_clloop:
+    mov word [es:di], 0x720
+    inc di
+    inc di
+    cmp di, ax
+    jne _clloop
     
-_ccol:
-    mov bx, 79
-    dec ax
-    jz _cout
-_crow:
-    mov di, bx
-    mov si, ax
-    mov dx, " "
-    call put_char
-    dec bx
-    jnz _crow
-    jz _ccol
-    
-_cout:
     ;xor  di, di
     ;mov  cx, 80 * 25
     ;mov  ax, 0x720      ; WhiteOnBlack space character

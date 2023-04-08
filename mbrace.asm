@@ -11,12 +11,9 @@
 %define KEY_RIGHT 0x4d
 
 
-section .data
-    vmem equ 0xb800
-
-
 section .text
     jmp start
+
 
 input:
     ; read key press
@@ -30,38 +27,51 @@ input:
 _up:
     cmp ah, KEY_UP
     jne _down
-    dec word [sy]
+    cmp [ps], word  0x1
+    je _down
+    sub word [py], 6
+    dec word [ps]
 _down:
     cmp ah, KEY_DOWN
     jne _left
-    inc word [sy]
+    cmp [ps], word 0x3
+    je _left
+    add word [py], 6
+    inc word [ps]
 _left:
     cmp ah, KEY_LEFT
     jne _right
-    dec word [sx]
+    dec word [px]
 _right:
     cmp ah, KEY_RIGHT
     jne _input_ret
-    inc word [sx]
+    inc word [px]
 _input_ret:
     ret
+
 
 logic:
     nop
     ret
 
+
 draw:
     call clscr
     
-    mov di, [sx]
-    mov si, [sy]
+    mov di, [px]
+    mov si, [py]
     call draw_car
     
-    mov di, 1
-    mov si, 1
+    mov di, [e1x]
+    mov si, [e1y]
+    call draw_car
+    
+    mov di, [e2x]
+    mov si, [e2y]
     call draw_car
     
     ret
+
 
 ;  di: x
 ;  si: y
@@ -77,7 +87,7 @@ draw_car:
     
 _carc:
     xor ax, ax
-    sub di, 12
+    sub di, 0xc
 _carr:
     ; char
     mov dx, [bx]  ; only works with bx
@@ -86,7 +96,7 @@ _carr:
     inc ax
     inc bx
     inc di
-    cmp ax, 12
+    cmp ax, 0xc
     jne _carr
     
     inc cx
@@ -98,6 +108,7 @@ _carr:
     pop di
     ret
 
+   
 ;  di: x
 ;  si: y
 ;  dx: char
@@ -120,6 +131,7 @@ put_char:
     pop di
     ret
 
+
 clscr:
     xor di, di
     mov ax, 80 * 25 * 2
@@ -136,6 +148,7 @@ _clloop:
     ;cld
     ;rep stosw
     ret
+
 
 start:
     ; set video mode
@@ -154,12 +167,20 @@ start:
     mov cx, 0x2607 ; 5th bit of ch
     int 0x10
     
-    mov ax, vmem  ; vga memory offset
+    mov ax, 0xb800  ; vga memory offset
     mov es, ax  ; move into segment register
     
-    ; set player position
-    mov word [sx], 40
-    mov word [sy], 12
+    ; player
+    mov word [ps], 0x1
+    mov word [px], 0x6
+    mov word [py], 0x3
+    
+    ; enemy
+    mov word [e1x], 60 
+    mov word [e1y], 10
+    
+    mov word [e2x], 40
+    mov word [e2y], 18
     
 game_loop:
     call input
@@ -182,8 +203,22 @@ exit:
 
 ;;;;;;;;;;;;;;;;;;
     ; player position
-    sx dw 1
-    sy dw 1
+    ps dw 0x0
+    px dw 0x0
+    py dw 0x0
+    
+    ; enemy
+    e1x dw 0x0
+    e1y dw 0x0
+    
+    e2x dw 0x0
+    e2y dw 0x0
+    
+    ; box
+    boxx dw 5
+    boxy dw 3
+    boxw dw 60
+    boxh dw 15
     
     ; car 12x5
 car:

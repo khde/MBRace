@@ -11,14 +11,7 @@
 %define KEY_RIGHT 0x4d
 
 
-section .bss
-    sx resw 1
-    sy resw 1
-
-
 section .data
-    x_offset db 20
-    y_offset db 10
     vmem equ 0xb800
 
 
@@ -59,31 +52,50 @@ logic:
 
 draw:
     call clscr
-    call draw_player
+    
+    mov di, [sx]
+    mov si, [sy]
+    call draw_car
+    
+    mov di, 1
+    mov si, 1
+    call draw_car
     
     ret
 
-draw_player:
-    mov di, [sx]
-    mov si, [sy]
-    mov dx, "#"
+;  di: x
+;  si: y
+draw_car:
+    push di
+    push si
+    
+    xor ax, ax  ; rows
+    mov bx, car  ; char
+    xor cx, cx  ; columns
+    
+    jmp _carr
+    
+_carc:
+    xor ax, ax
+    sub di, 12
+_carr:
+    ; char
+    mov dx, [bx]  ; only works with bx
     call put_char
     
-    mov di, [sx]
-    mov si, [sy]
-    mov dx, "#"
-    call put_char
+    inc ax
+    inc bx
+    inc di
+    cmp ax, 12
+    jne _carr
     
-    mov di, [sx]
-    mov si, [sy]
-    mov dx, "#"
-    call put_char
-   
-    mov di, [sx]
-    mov si, [sy]
-    mov dx, "#"
-    call put_char
+    inc cx
+    inc si
+    cmp cx, 5
+    jne _carc
     
+    pop si
+    pop di
     ret
 
 ;  di: x
@@ -149,8 +161,6 @@ start:
     mov word [sx], 40
     mov word [sy], 12
     
-    jmp game_loop
-
 game_loop:
     call input
     call logic
@@ -159,7 +169,7 @@ game_loop:
     jmp game_loop
     
 exit:
-    ; Linux kernel acpi/apm poweroff routine
+    ; Linux kernel acpi/apm poweroff code
     ; blatantly copied
     mov ax, 0x1000
     mov ax, ss
@@ -168,6 +178,21 @@ exit:
     mov bx, 0x1
     mov cx, 0x3
     int 0x15
+
+
+;;;;;;;;;;;;;;;;;;
+    ; player position
+    sx dw 1
+    sy dw 1
     
+    ; car 12x5
+car:
+    db ' ', ' ', ' ', ' ', '_', '_', '_', '_', ' ', ' ', ' ', ' '
+    db ' ', ' ', ' ', '/', ' ', ' ', ' ', ' ', '\', ' ', ' ', ' '
+    db '_', '_', '/', '_', '_', '_', '_', '_', '_', '\', '_', '_'
+    db '|', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '|'
+    db '=', '(', 'O', ')', ' ', '-', '-', ' ', '(', 'O', ')', '"'
+
+
 times 510-($-$$) db 0x4f  ; fill with zeros
 db 0x55, 0xaa  ; boot signature

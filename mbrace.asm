@@ -16,6 +16,11 @@ section .text
 
 
 input:
+    ; check if key is pressed
+    mov ah, 0x1
+    int 0x16
+    jz _input_ret
+    
     ; read key press
     mov ah, 0x0
     int 0x16
@@ -51,7 +56,7 @@ _input_ret:
 
 
 logic:
-    nop
+    dec word [e1x]
     ret
 
 
@@ -187,6 +192,12 @@ game_loop:
     call logic
     call draw
     
+    ; wait
+    xor ax, ax
+    mov ah, 0x86  ; number for waiting
+    mov cx, 1  ; time to wait
+    int 0x15
+    
     jmp game_loop
     
 exit:
@@ -213,6 +224,8 @@ exit:
     
     e2x dw 0x0
     e2y dw 0x0
+    
+    eoffset dw 
     
     ; box
     boxx dw 5

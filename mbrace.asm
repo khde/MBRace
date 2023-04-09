@@ -11,7 +11,6 @@
 section .text
     jmp start
 
-
 input:
     ; check if key is pressed
     mov ah, 0x1

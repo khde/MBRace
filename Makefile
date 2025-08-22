@@ -1,4 +1,4 @@
-SRC := mbrace.asm
+SRC := src/mbrace.asm
 DST := mbrace.img
 AS := nasm
 ASFLAGS := -f bin
